@@ -295,13 +295,6 @@ const playlist = [
     album: "our 8th month.",
     src: "music/apple.mp3",
     cover: "assets/covers/apple.png"
-  },
-  {
-    title: "Apple Cider",
-    artist: "your rexy",
-    album: "our 8th month.",
-    src: "music/apple.mp3",
-    cover: "assets/covers/apple.png"
   }
 ];
 
