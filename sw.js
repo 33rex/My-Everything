@@ -1,4 +1,4 @@
-const CACHE_NAME = "web4myash-v3-cache-1";
+const CACHE_NAME = "web4myash-v5-may-birthday-cache-2";
 
 const CORE_ASSETS = [
   "./",
@@ -6,9 +6,10 @@ const CORE_ASSETS = [
   "./manifest.webmanifest",
   "./assets/css/style.css",
   "./assets/js/app.js",
-  "./assets/icons/icon-192.svg",
-  "./assets/icons/icon-512.svg",
-  "./assets/covers/default-cover.svg"
+  "./assets/birthday/birthday-poster.png",
+  "./assets/icons/icon-192.png",
+  "./assets/icons/icon-512.png",
+  "./assets/covers/default-cover.jpg"
 ];
 
 self.addEventListener("install", (event) => {
@@ -36,3 +37,4 @@ self.addEventListener("fetch", (event) => {
     caches.match(event.request).then((cached) => cached || fetch(event.request))
   );
 });
+// Birthday update packaged: 5 May special surprise.

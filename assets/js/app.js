@@ -9,7 +9,8 @@ const STORAGE_KEYS = {
   likedMessages: "web4myash_likedMessages",
   collectedVoices: "web4myash_collectedVoices",
   favoriteVoices: "web4myash_favoriteVoices",
-  likedVoices: "web4myash_likedVoices"
+  likedVoices: "web4myash_likedVoices",
+  birthdaySeen: "web4myash_birthdaySeen_5may"
 };
 
 const LETTERS = [
@@ -143,6 +144,7 @@ const loveLetterBtn = document.getElementById("loveLetterBtn");
 const proposalBtn = document.getElementById("proposalBtn");
 const messageVaultBtn = document.getElementById("messageVaultBtn");
 const voiceMessagesBtn = document.getElementById("voiceMessagesBtn");
+const birthdaySurpriseBtn = document.getElementById("birthdaySurpriseBtn");
 
 const galleryModal = document.getElementById("galleryModal");
 const loveLetterModal = document.getElementById("loveLetterModal");
@@ -150,6 +152,13 @@ const proposalModal = document.getElementById("proposalModal");
 const updatesModal = document.getElementById("updatesModal");
 const messageVaultModal = document.getElementById("messageVaultModal");
 const voiceMessagesModal = document.getElementById("voiceMessagesModal");
+const birthdayModal = document.getElementById("birthdayModal");
+const birthdayEffectsLayer = document.getElementById("birthdayEffectsLayer");
+const birthdayMagicBtn = document.getElementById("birthdayMagicBtn");
+const birthdayLetterBtn = document.getElementById("birthdayLetterBtn");
+const birthdayLetterBox = document.getElementById("birthdayLetterBox");
+const birthdayTypeText = document.getElementById("birthdayTypeText");
+const birthdayCountdown = document.getElementById("birthdayCountdown");
 
 const lettersOverview = document.getElementById("lettersOverview");
 const activeLetterBox = document.getElementById("activeLetterBox");
@@ -208,7 +217,8 @@ const floatingQuotes = [
   "being yours feels like home",
   "you are my peace",
   "your smile is my weakness",
-  "youre the little world i always want to come back to"
+  "youre the little world i always want to come back to",
+  "happy birthday my ash — 5 may is yours ✨"
 ];
 
 const playlist = [
@@ -1370,6 +1380,140 @@ function bindVoiceCardEvents() {
   });
 }
 
+
+function isMayFifth() {
+  const now = new Date();
+  return now.getMonth() === 4 && now.getDate() === 5;
+}
+
+function getNextBirthdayDate() {
+  const now = new Date();
+  let target = new Date(now.getFullYear(), 4, 5, 0, 0, 0, 0);
+  if (now > new Date(now.getFullYear(), 4, 5, 23, 59, 59, 999)) {
+    target = new Date(now.getFullYear() + 1, 4, 5, 0, 0, 0, 0);
+  }
+  return target;
+}
+
+function renderBirthdayCountdown() {
+  if (!birthdayCountdown) return;
+  if (isMayFifth()) {
+    birthdayCountdown.textContent = "today is 5 May — happy birthday my beautiful ash ♡";
+    return;
+  }
+  const diff = getNextBirthdayDate().getTime() - Date.now();
+  const days = Math.max(0, Math.floor(diff / 86400000));
+  const hours = Math.max(0, Math.floor((diff % 86400000) / 3600000));
+  const mins = Math.max(0, Math.floor((diff % 3600000) / 60000));
+  birthdayCountdown.textContent = `${days} days, ${hours} hours, ${mins} minutes until 5 May magic ✨`;
+}
+
+function typeBirthdayMessage() {
+  if (!birthdayTypeText) return;
+  const message = "My baby, my sweetheart, my princess, my daughter, my everything, i wish you the happiest and most beautiful birthday ever my angel. i love you so much and i can’t wait to meet up with you my angel.";
+  birthdayTypeText.textContent = "";
+  let i = 0;
+  const typer = setInterval(() => {
+    birthdayTypeText.textContent += message.charAt(i);
+    i += 1;
+    if (i >= message.length) clearInterval(typer);
+  }, 28);
+}
+
+function createBirthdayConfetti(amount = 60) {
+  if (!birthdayEffectsLayer) return;
+  for (let i = 0; i < amount; i++) {
+    const el = document.createElement("span");
+    el.className = "birthday-confetti";
+    el.style.setProperty("--x", `${Math.random() * 100}%`);
+    el.style.setProperty("--hue", `${320 + Math.random() * 60}`);
+    el.style.setProperty("--dur", `${2.4 + Math.random() * 2.8}s`);
+    el.style.setProperty("--drift", `${-90 + Math.random() * 180}px`);
+    birthdayEffectsLayer.appendChild(el);
+    setTimeout(() => el.remove(), 5600);
+  }
+}
+
+function createBirthdayHearts(amount = 34) {
+  if (!birthdayEffectsLayer) return;
+  for (let i = 0; i < amount; i++) {
+    const el = document.createElement("span");
+    el.className = "birthday-heart";
+    el.textContent = Math.random() > .28 ? "❤" : "💕";
+    el.style.setProperty("--x", `${Math.random() * 100}%`);
+    el.style.setProperty("--size", `${18 + Math.random() * 30}px`);
+    el.style.setProperty("--dur", `${2.7 + Math.random() * 2.4}s`);
+    el.style.setProperty("--drift", `${-70 + Math.random() * 140}px`);
+    birthdayEffectsLayer.appendChild(el);
+    setTimeout(() => el.remove(), 5600);
+  }
+}
+
+function createBirthdayPetals(amount = 24) {
+  if (!birthdayEffectsLayer) return;
+  for (let i = 0; i < amount; i++) {
+    const el = document.createElement("span");
+    el.className = "birthday-petal";
+    el.textContent = "🌸";
+    el.style.setProperty("--x", `${Math.random() * 100}%`);
+    el.style.setProperty("--size", `${14 + Math.random() * 18}px`);
+    el.style.setProperty("--dur", `${3.5 + Math.random() * 3.2}s`);
+    el.style.setProperty("--drift", `${-120 + Math.random() * 240}px`);
+    birthdayEffectsLayer.appendChild(el);
+    setTimeout(() => el.remove(), 7200);
+  }
+}
+
+function createBirthdayFirework() {
+  if (!birthdayEffectsLayer) return;
+  for (let i = 0; i < 5; i++) {
+    const el = document.createElement("span");
+    el.className = "birthday-firework";
+    el.style.setProperty("--x", `${18 + Math.random() * 64}%`);
+    el.style.setProperty("--y", `${12 + Math.random() * 48}%`);
+    birthdayEffectsLayer.appendChild(el);
+    setTimeout(() => el.remove(), 1000);
+  }
+}
+
+function launchBirthdayShow() {
+  if (birthdayModal) birthdayModal.querySelector(".birthday-card")?.classList.add("magic-on");
+  createBirthdayConfetti(90);
+  createBirthdayHearts(48);
+  createBirthdayPetals(30);
+  createBirthdayFirework();
+  maybeVibrate(90);
+  setTimeout(createBirthdayFirework, 420);
+  setTimeout(createBirthdayFirework, 850);
+  setTimeout(() => birthdayModal?.querySelector(".birthday-card")?.classList.remove("magic-on"), 1400);
+}
+
+function openBirthdaySurprise() {
+  renderBirthdayCountdown();
+  typeBirthdayMessage();
+  openModal(birthdayModal);
+  setTimeout(launchBirthdayShow, 350);
+  localStorage.setItem(STORAGE_KEYS.birthdaySeen, "true");
+}
+
+function initBirthdaySurprise() {
+  renderBirthdayCountdown();
+  setInterval(renderBirthdayCountdown, 60000);
+
+  if (birthdaySurpriseBtn) birthdaySurpriseBtn.addEventListener("click", openBirthdaySurprise);
+  if (birthdayMagicBtn) birthdayMagicBtn.addEventListener("click", launchBirthdayShow);
+  if (birthdayLetterBtn && birthdayLetterBox) {
+    birthdayLetterBtn.addEventListener("click", () => {
+      birthdayLetterBox.classList.toggle("hidden");
+      launchBirthdayShow();
+    });
+  }
+
+  if (isMayFifth() && localStorage.getItem(STORAGE_KEYS.birthdaySeen) !== "true") {
+    setTimeout(openBirthdaySurprise, 1200);
+  }
+}
+
 function openModal(modal) {
   modal.classList.remove("hidden");
 }
@@ -1580,6 +1724,7 @@ function bindGeneralUI() {
         stopAllVoicePlayers();
         currentVoicePlayingId = null;
       }
+      if (type === "birthday") closeModal(birthdayModal);
     });
   });
 }
@@ -1638,6 +1783,7 @@ function init() {
   initInstallPrompt();
   initServiceWorker();
   applySavedAudioState();
+  initBirthdaySurprise();
 
   loadTrack(0, false);
   audioPlayer.volume = Number(volumeSlider.value);
