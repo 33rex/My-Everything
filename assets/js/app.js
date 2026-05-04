@@ -1388,7 +1388,7 @@ function isMayFifth() {
 
 function getNextBirthdayDate() {
   const now = new Date();
-  let target = new Date(now.getFullYear(), 4, 5, 0, 0, 0, 0);
+  let target = new Date(now.getFullYear(), 4, 4, 23, 0, 0, 0);
   if (now > new Date(now.getFullYear(), 4, 5, 23, 59, 59, 999)) {
     target = new Date(now.getFullYear() + 1, 4, 5, 0, 0, 0, 0);
   }
@@ -1405,7 +1405,7 @@ function renderBirthdayCountdown() {
   const days = Math.max(0, Math.floor(diff / 86400000));
   const hours = Math.max(0, Math.floor((diff % 86400000) / 3600000));
   const mins = Math.max(0, Math.floor((diff % 3600000) / 60000));
-  birthdayCountdown.textContent = `${days} days, ${hours} hours, ${mins} minutes until 5 May magic ✨`;
+  birthdayCountdown.textContent = `${days} days, ${hours} hours, ${mins} minutes until your birthdayyyyyy🙈 hheheehe`;
 }
 
 function typeBirthdayMessage() {
