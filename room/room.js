@@ -117,8 +117,45 @@ async function loadMessages(){
   }catch(error){if(error.message==="locked")lock()}
 }
 async function sendMessage(event){event.preventDefault();const input=document.getElementById("draft"),text=input.value.trim();if(!text)return;input.value="";try{const encrypted=await encryptText(state.session.roomKey,text);await api("/api/room/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:randomId(),kind:"text",...encrypted,replyTo:state.replyTo?.id||null})},state.session.token);state.replyTo=null;paintReply();await loadMessages()}catch(error){setError(error.message)}}
-async function sendAttachment(event){const input=event.currentTarget,file=input.files[0],status=document.getElementById("uploadStatus");input.value="";if(!file)return;if(!/^(image|video)\//.test(file.type)){setError("Choose a photo or video.");return}if(file.size>50*1024*1024){setError("Photos and videos must be smaller than 50 MB.");return}status.textContent="Encrypting and sending…";status.classList.remove("hidden");try{const attachmentId=randomId(),fileIv=crypto.getRandomValues(new Uint8Array(12));const encryptedFile=await encryptBytes(state.session.roomKey,await file.arrayBuffer(),fileIv);await api(`/api/room/attachments?${new URLSearchParams({id:attachmentId,fileIv:b64(fileIv)})}`,{method:"POST",headers:{"Content-Type":"application/octet-stream"},body:encryptedFile},state.session.token);const payload={attachmentId,name:file.name,mimeType:file.type,size:file.size,fileIv:b64(fileIv)};const encrypted=await encryptText(state.session.roomKey,JSON.stringify(payload));await api("/api/room/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:randomId(),kind:"attachment",...encrypted,replyTo:state.replyTo?.id||null})},state.session.token);state.replyTo=null;paintReply();await loadMessages()}catch(error){setError(error.message)}finally{status.classList.add("hidden")}}
-async function openAttachment(id){const message=state.messages.find(m=>m.attachment?.attachmentId===id);if(!message)return;try{const response=await fetch(`${API_BASE}/api/room/attachments/${encodeURIComponent(id)}`,{headers:{Authorization:`Bearer ${state.session.token}`},cache:"no-store"});if(!response.ok)throw new Error("This attachment could not be opened.");const clear=await decryptBytes(state.session.roomKey,await response.arrayBuffer(),message.attachment.fileIv);const url=URL.createObjectURL(new Blob([clear],{type:message.attachment.mimeType}));state.mediaUrls.set(id,url);paintMessages()}catch(error){setError(error.message)}}
+async function sendAttachment(event){
+  const input=event.currentTarget,file=input.files[0],status=document.getElementById("uploadStatus");input.value="";
+  if(!file)return;
+  if(!/^(image|video)\//.test(file.type)){setError("Choose a photo or video.");return}
+  if(file.size>500*1024*1024){setError("Photos and videos must be smaller than 500 MB.");return}
+  status.classList.remove("hidden");
+  try{
+    const attachmentId=randomId(),chunkSize=8*1024*1024,chunkCount=Math.ceil(file.size/chunkSize),chunkIvs=[];
+    for(let index=0;index<chunkCount;index++){
+      status.textContent=`Encrypting and sending… ${index+1} / ${chunkCount}`;
+      const chunkIv=crypto.getRandomValues(new Uint8Array(12));chunkIvs.push(b64(chunkIv));
+      const encryptedChunk=await encryptBytes(state.session.roomKey,await file.slice(index*chunkSize,Math.min(file.size,(index+1)*chunkSize)).arrayBuffer(),chunkIv);
+      await api(`/api/room/attachments?${new URLSearchParams({id:attachmentId,fileIv:b64(chunkIv),chunkIndex:String(index),chunkCount:String(chunkCount)})}`,{method:"POST",headers:{"Content-Type":"application/octet-stream"},body:encryptedChunk},state.session.token);
+    }
+    await api(`/api/room/attachments?${new URLSearchParams({id:attachmentId,complete:"1",chunkCount:String(chunkCount),totalSize:String(file.size)})}`,{method:"POST"},state.session.token);
+    const payload={attachmentId,name:file.name,mimeType:file.type,size:file.size,chunkIvs};
+    const encrypted=await encryptText(state.session.roomKey,JSON.stringify(payload));
+    await api("/api/room/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:randomId(),kind:"attachment",...encrypted,replyTo:state.replyTo?.id||null})},state.session.token);
+    state.replyTo=null;paintReply();await loadMessages();
+  }catch(error){setError(error.message)}finally{status.classList.add("hidden")}
+}
+async function openAttachment(id){
+  const message=state.messages.find(m=>m.attachment?.attachmentId===id);if(!message)return;
+  try{
+    const parts=[];
+    if(Array.isArray(message.attachment.chunkIvs)){
+      for(let index=0;index<message.attachment.chunkIvs.length;index++){
+        const response=await fetch(`${API_BASE}/api/room/attachments/${encodeURIComponent(id)}?chunkIndex=${index}`,{headers:{Authorization:`Bearer ${state.session.token}`},cache:"no-store"});
+        if(!response.ok)throw new Error("This attachment could not be opened.");
+        parts.push(await decryptBytes(state.session.roomKey,await response.arrayBuffer(),message.attachment.chunkIvs[index]));
+      }
+    }else{
+      const response=await fetch(`${API_BASE}/api/room/attachments/${encodeURIComponent(id)}`,{headers:{Authorization:`Bearer ${state.session.token}`},cache:"no-store"});
+      if(!response.ok)throw new Error("This attachment could not be opened.");
+      parts.push(await decryptBytes(state.session.roomKey,await response.arrayBuffer(),message.attachment.fileIv));
+    }
+    const url=URL.createObjectURL(new Blob(parts,{type:message.attachment.mimeType}));state.mediaUrls.set(id,url);paintMessages();
+  }catch(error){setError(error.message)}
+}
 let lastTyping=0;function typingPing(){if(Date.now()-lastTyping>1800){lastTyping=Date.now();api("/api/room/typing",{method:"POST"},state.session.token).catch(()=>{})}}
 async function react(id,emoji){await api(`/api/room/messages/${encodeURIComponent(id)}/react`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({emoji})},state.session.token);await loadMessages()}
 async function hideMessage(id){await api(`/api/room/messages/${encodeURIComponent(id)}/hide`,{method:"POST"},state.session.token);state.messages=state.messages.filter(m=>m.id!==id);paintMessages()}
