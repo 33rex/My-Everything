@@ -1,4 +1,4 @@
-const CACHE_NAME = "web4myash-our-room-v1";
+const CACHE_NAME = "web4myash-our-room-v2-lock-fix";
 
 const CORE_ASSETS = [
   "./",

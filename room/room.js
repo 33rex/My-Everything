@@ -42,10 +42,15 @@ function lock(){
   privacyCover.classList.add("show"); setTimeout(()=>{privacyCover.classList.remove("show");renderLogin()},0);
 }
 function strictPrivacy(){
+  const mobileLike = navigator.maxTouchPoints > 0 && window.matchMedia("(pointer: coarse)").matches;
   document.addEventListener("visibilitychange",()=>{if(state.session&&document.visibilityState!=="visible") lock()},true);
-  window.addEventListener("blur",()=>{if(state.session&&!document.activeElement?.dataset.safePicker) lock()},true);
+  window.addEventListener("blur",()=>{
+    // Mobile browsers can blur the window while opening the keyboard. Their
+    // visibility/page lifecycle events still catch real app and tab switches.
+    if(state.session&&!mobileLike&&!document.activeElement?.dataset.safePicker) lock();
+  },true);
   window.addEventListener("pagehide",()=>{if(state.session) lock()},true);
-  window.addEventListener("pageshow",()=>{if(state.session) lock()},true);
+  document.addEventListener("freeze",()=>{if(state.session) lock()},true);
 }
 function setError(message){ const box=document.getElementById("errorBox"); if(box){box.textContent=message;box.classList.remove("hidden")} }
 
