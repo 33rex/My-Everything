@@ -1,4 +1,4 @@
-const CACHE_NAME = "web4myash-v5-may-birthday-cache-2";
+const CACHE_NAME = "web4myash-our-room-v1";
 
 const CORE_ASSETS = [
   "./",
@@ -6,6 +6,9 @@ const CORE_ASSETS = [
   "./manifest.webmanifest",
   "./assets/css/style.css",
   "./assets/js/app.js",
+  "./room/",
+  "./room/room.css",
+  "./room/room.js",
   "./assets/birthday/birthday-poster.png",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",
